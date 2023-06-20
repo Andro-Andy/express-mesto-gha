@@ -1,17 +1,16 @@
 const cardsRouter = require('express').Router();
 const {
-  getAllCards,
+  getCards,
   createCard,
+  deleteCards,
   likeCard,
   dislikeCard,
-  deleteCards,
 } = require('../controllers/cards');
 
-cardsRouter.get('/', getAllCards);
+cardsRouter.get('/', getCards);
 cardsRouter.post('/', createCard);
 cardsRouter.delete('/:cardId', deleteCards);
-
-cardsRouter.put('/:cardId/likes', likeCard); // поставить лайк карточке
-cardsRouter.delete('/:cardId/likes', dislikeCard); // убрать лайк с карточки
+cardsRouter.put('/:cardId/likes', likeCard);
+cardsRouter.delete('/:cardId/likes', dislikeCard);
 
 module.exports = cardsRouter;

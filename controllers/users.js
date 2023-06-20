@@ -25,20 +25,12 @@ const getUsersId = async (req, res) => {
   }
   return null;
 };
-
-const getUsers = (req, res) => {
-  User.find({})
-    .orFail(() => new Error('Пользователь не найден'))
-    .then((users) => res.status(200).send(users))
-    .catch((err) => handleError(err, res));
-};
-
 const createUser = async (req, res) => {
   try {
     const { name, about, avatar } = req.body;
     if (!name || !about || !avatar
-        || name.length < 2 || name.length > 30
-        || about.length < 2 || about.length > 30) {
+      || name.length < 2 || name.length > 30
+      || about.length < 2 || about.length > 30) {
       return res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя' });
     }
 
@@ -53,7 +45,36 @@ const createUser = async (req, res) => {
     return handleError(err, res);
   }
 };
+const getUsers = (req, res) => {
+  User.find({})
+    .orFail(() => new Error('Пользователь не найден'))
+    .then((users) => res.status(200).send(users))
+    .catch((err) => handleError(err, res));
+};
 
+const updateAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден' });
+    }
+    user.avatar = req.body.avatar;
+    await user.save();
+
+    // Возвращаем в ответе url-адрес аватара, который был передан в запросе
+    res.send({ message: 'Аватар обновлен', avatar: req.body.avatar });
+  } catch (err) {
+    if (err instanceof mongoose.CastError) {
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Некорректный ID пользователя' });
+    }
+    if (err.name === 'ValidationError') {
+      return res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+    }
+
+    handleError(err, res);
+  }
+  return null;
+};
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const userId = req.user._id;
@@ -84,31 +105,6 @@ const updateProfile = (req, res) => {
       return handleError(error, res);
     });
 };
-
-const updateAvatar = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден' });
-    }
-    user.avatar = req.body.avatar;
-    await user.save();
-
-    // Возвращаем в ответе url-адрес аватара, который был передан в запросе
-    res.send({ message: 'Аватар обновлен', avatar: req.body.avatar });
-  } catch (err) {
-    if (err instanceof mongoose.CastError) {
-      return res.status(NOT_FOUND_ERROR).send({ message: 'Некорректный ID пользователя' });
-    }
-    if (err.name === 'ValidationError') {
-      return res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-    }
-
-    handleError(err, res);
-  }
-  return null;
-};
-
 module.exports = {
   createUser,
   getUsers,

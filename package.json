@@ -8,6 +8,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
     "joi": "^17.9.2",
+    "mongodb": "^5.6.0",
     "mongoose": "^7.1.0",
     "validator": "^13.9.0"
   },
@@ -18,10 +19,9 @@
     "nodemon": "^2.0.22"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx eslint .",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   }
 }

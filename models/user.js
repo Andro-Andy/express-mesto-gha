@@ -1,18 +1,18 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 // Схема пользователя
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Поле "name" должно быть заполнено'],
+      required: [true, 'Поле "name" обязательна к заполнению'],
       minlength: [2, 'Минимальная длина поля "name" - 2'],
       maxlength: [30, 'Максимальная длина поля "name" - 30'],
     },
     about: {
       type: String,
-      required: [true, 'Поле "about" должно быть заполнено'],
+      required: [true, 'Поле "about" обязательна к заполнению'],
       minlength: [2, 'Минимальная длина поля "about" - 2'],
       maxlength: [30, 'Максимальная длина поля "about" - 30'],
     },
@@ -20,14 +20,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: (v) => validator.isURL(v),
-        message: "Некорректный URL",
+        message: 'Некорректный URL',
       },
-      required: [true, 'Поле "avatar" должно быть заполнено'],
+      required: [true, 'Поле "avatar" обязательна к заполнению'],
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 // Модель пользователя
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model('user', userSchema);

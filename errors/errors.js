@@ -1,8 +1,8 @@
-const NOT_FOUND_ERROR = 404;
 const VALIDATION_ERROR = 400;
-const INTERNAL_SERVER_ERROR = 500;
+const NOT_FOUND_ERROR = 404;
+const SERVER_ERROR = 500;
 const handleError = (err, res) => {
-  res.status(INTERNAL_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+  res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
 };
 const errorNotFound = (req, res) => {
   res
@@ -11,9 +11,9 @@ const errorNotFound = (req, res) => {
 };
 
 module.exports = {
-  NOT_FOUND_ERROR,
   VALIDATION_ERROR,
-  INTERNAL_SERVER_ERROR,
+  NOT_FOUND_ERROR,
+  SERVER_ERROR,
   handleError,
   errorNotFound,
 };

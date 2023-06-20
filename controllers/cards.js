@@ -1,4 +1,3 @@
-// импортируем модель карточки из нашей схемы
 const { default: mongoose } = require('mongoose');
 const {
   handleError,
@@ -7,7 +6,7 @@ const {
 } = require('../errors/errors');
 const Card = require('../models/card');
 
-const getAllCards = async (req, res) => {
+const getCards = async (req, res) => {
   try {
     const limit = req.query.limit || 100;
     const page = req.query.page || 1;
@@ -41,19 +40,19 @@ const createCard = async (req, res) => {
     const { name, link } = req.body;
     if (!name || name.length < 2 || name.length > 30) {
       return res.status(VALIDATION_ERROR).send({
-        message: 'Переданы некорректные данные при создании пользователя',
+        message: 'Некорректные данные при создании пользователя',
       });
     }
     if (!name || !link) {
       return res
         .status(VALIDATION_ERROR)
-        .send({ message: 'Поля "name" и "link" обязательно нужно заполнить' });
+        .send({ message: 'Поля "name" и "link" обязательны к заполнению' });
     }
 
     if (!req.user || !req.user._id) {
       return res
         .status(VALIDATION_ERROR)
-        .send({ message: 'Войдите, чтобы редактировать карточку' });
+        .send({ message: 'Для редактирования необходимо войти в профиль' });
     }
 
     const cardData = { ...req.body, owner: req.user };
@@ -64,7 +63,7 @@ const createCard = async (req, res) => {
     if (err.codeName === 'DuplicateKey') {
       return res
         .status(VALIDATION_ERROR)
-        .send({ message: 'Карточка с таким именем уже существует' });
+        .send({ message: 'Карточка с таким именем уже существует, выберите другое' });
     }
     handleError(err, res);
   }
@@ -73,18 +72,15 @@ const createCard = async (req, res) => {
 
 const deleteCards = async (req, res) => {
   try {
-    // Деструктуризация для получения параметров запроса
     const { cardId } = req.params;
     const userId = req.user._id;
 
-    // Проверяем валидность ID карточки
     if (!mongoose.Types.ObjectId.isValid(cardId)) {
       return res
         .status(VALIDATION_ERROR)
         .send({ message: 'Некорректный ID карточки' });
     }
 
-    // Проверяем наличие карточки с данным ID
     const card = await Card.findById(cardId);
     if (!card) {
       return res
@@ -92,29 +88,25 @@ const deleteCards = async (req, res) => {
         .send({ message: 'Карточка не найдена' });
     }
 
-    // Проверяем, что текущий пользователь является владелецем карточки
     if (card.owner.toString() !== userId) {
       return res
         .status(VALIDATION_ERROR)
-        .send({ message: 'У вас нет прав на удаление этой карточки' });
+        .send({ message: 'У вас нет доступа для удаления этой карточки' });
     }
 
-    // Удаляем карточку
-    const deletedCard = await Card.findByIdAndRemove(cardId);
+    const deletedElement = await Card.findByIdAndRemove(cardId);
 
-    // Отправляем удаленную карточку обратно на клиент
-    return res.send(deletedCard);
+    return res.send(deletedElement);
   } catch (err) {
     if (err.name === 'CastError') {
       return res.status(VALIDATION_ERROR).send({
         message: 'Некорректный запрос',
       });
     }
-    // Отправляем ошибку обратно на клиент
+
     handleError(err, res);
   }
 
-  // Гарантируем возврат значения
   return null;
 };
 
@@ -146,7 +138,6 @@ const putLikeCard = (req, res, updateData) => {
           message: 'Некорректный запрос',
         });
       }
-      // Отправляем ошибку обратно на клиент
       return handleError(err, res);
     });
   return null;
@@ -165,7 +156,7 @@ const dislikeCard = (req, res) => {
 };
 
 module.exports = {
-  getAllCards,
+  getCards,
   createCard,
   deleteCards,
   likeCard,
