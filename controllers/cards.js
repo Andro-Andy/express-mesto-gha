@@ -13,15 +13,12 @@ const getCards = async (req, res) => {
     const skip = (page - 1) * limit;
     const cards = await Card.find({})
       .skip(skip)
-      .limit(limit)
-      .populate([
-        { path: 'owner' },
-        { path: 'likes' },
-      ]);
+      .limit(limit);
+
     if (cards.length === 0 && page !== 1) {
-      throw new Error('Страница не найдена');
+      throw new Error(404, 'Страница не найдена');
     }
-    if (!cards || cards.length === 0) {
+    if (!cards || cards.length === []) {
       return res
         .status(VALIDATION_ERROR)
         .send({ message: 'Список карточек не найден' });
@@ -55,12 +52,12 @@ const createCard = async (req, res) => {
         .send({ message: 'Для редактирования необходимо войти в профиль' });
     }
 
-    const cardData = { ...req.body, owner: req.user };
+    const cardData = { name, link, owner: req.user._id };
     const card = await Card.create(cardData);
     const createdCard = await Card.findById(card._id).populate('owner');
-    return res.status(201).send(createdCard);
+    res.status(201).send(createdCard);
   } catch (err) {
-    if (err.codeName === 'DuplicateKey') {
+    if (err.codeName === 'ValidationError') {
       return res
         .status(VALIDATION_ERROR)
         .send({ message: 'Карточка с таким именем уже существует, выберите другое' });
@@ -118,10 +115,6 @@ const putLikeCard = (req, res, updateData) => {
   }
 
   Card.findByIdAndUpdate(req.params.cardId, updateData, { new: true })
-    .populate([
-      { path: 'owner', model: 'user' },
-      { path: 'likes', model: 'user' },
-    ])
     .then((card) => {
       if (!card) {
         return res
