@@ -16,7 +16,9 @@ const getCards = async (req, res) => {
       .limit(limit);
 
     if (cards.length === 0 && page !== 1) {
-      throw new Error(404, 'Страница не найдена');
+      return res
+        .status(NOT_FOUND_ERROR)
+        .send({ message: 'Страница не найдена' })
     }
     if (!cards || cards.length === []) {
       return res
@@ -54,8 +56,7 @@ const createCard = async (req, res) => {
 
     const cardData = { name, link, owner: req.user._id };
     const card = await Card.create(cardData);
-    const createdCard = await Card.findById(card._id).populate('owner');
-    res.status(201).send(createdCard);
+    res.status(201).send(card);
   } catch (err) {
     if (err.codeName === 'ValidationError') {
       return res
