@@ -28,8 +28,7 @@ const getUsersId = async (req, res) => {
 const createUser = async (req, res) => {
   try {
     const { name, about, avatar } = req.body;
-    if (!name || !about || !avatar
-      || name.length < 2 || name.length > 30
+    if (name.length < 2 || name.length > 30
       || about.length < 2 || about.length > 30) {
       return res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя' });
     }
@@ -45,9 +44,8 @@ const createUser = async (req, res) => {
     return handleError(err, res);
   }
 };
-const getUsers = (req, res) => {
+const getUsers = (res) => {
   User.find({})
-    .orFail(() => new Error('Пользователь не найден'))
     .then((users) => res.status(200).send(users))
     .catch((err) => handleError(err, res));
 };

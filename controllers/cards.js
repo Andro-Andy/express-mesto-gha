@@ -1,7 +1,7 @@
-const { default: mongoose } = require('mongoose');
 const {
   handleError,
   VALIDATION_ERROR,
+  FORBIDDEN_ERROR,
   NOT_FOUND_ERROR,
 } = require('../errors/errors');
 const Card = require('../models/card');
@@ -15,16 +15,6 @@ const getCards = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    if (cards.length === 0 && page !== 1) {
-      return res
-        .status(NOT_FOUND_ERROR)
-        .send({ message: 'Страница не найдена' })
-    }
-    if (!cards || cards.length === []) {
-      return res
-        .status(VALIDATION_ERROR)
-        .send({ message: 'Список карточек не найден' });
-    }
     res.status(200).send({
       cards,
     });
@@ -37,23 +27,6 @@ const getCards = async (req, res) => {
 const createCard = async (req, res) => {
   try {
     const { name, link } = req.body;
-    if (!name || name.length < 2 || name.length > 30) {
-      return res.status(VALIDATION_ERROR).send({
-        message: 'Некорректные данные при создании пользователя',
-      });
-    }
-    if (!name || !link) {
-      return res
-        .status(VALIDATION_ERROR)
-        .send({ message: 'Поля "name" и "link" обязательны к заполнению' });
-    }
-
-    if (!req.user || !req.user._id) {
-      return res
-        .status(VALIDATION_ERROR)
-        .send({ message: 'Для редактирования необходимо войти в профиль' });
-    }
-
     const cardData = { name, link, owner: req.user._id };
     const card = await Card.create(cardData);
     res.status(201).send(card);
@@ -73,12 +46,6 @@ const deleteCards = async (req, res) => {
     const { cardId } = req.params;
     const userId = req.user._id;
 
-    if (!mongoose.Types.ObjectId.isValid(cardId)) {
-      return res
-        .status(VALIDATION_ERROR)
-        .send({ message: 'Некорректный ID карточки' });
-    }
-
     const card = await Card.findById(cardId);
     if (!card) {
       return res
@@ -88,7 +55,7 @@ const deleteCards = async (req, res) => {
 
     if (card.owner.toString() !== userId) {
       return res
-        .status(VALIDATION_ERROR)
+        .status(FORBIDDEN_ERROR)
         .send({ message: 'У вас нет доступа для удаления этой карточки' });
     }
 
@@ -109,12 +76,6 @@ const deleteCards = async (req, res) => {
 };
 
 const putLikeCard = (req, res, updateData) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
-    return res.status(400).send({
-      message: 'Некорректный ID карточки',
-    });
-  }
-
   Card.findByIdAndUpdate(req.params.cardId, updateData, { new: true })
     .then((card) => {
       if (!card) {
