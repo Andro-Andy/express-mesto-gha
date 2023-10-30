@@ -1,41 +1,35 @@
-const process = require('process');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+require('dotenv').config();
 const express = require('express');
-const helmet = require('helmet');
-
-const { PORT = 3000, BASE_PATH } = process.env;
+const cookieParser = require('cookie-parser');
+const mongoose = require('mongoose');
+const { errors: errorCelebrate } = require('celebrate');
+const router = require('./routes/index');
+const handlerErrors = require('./middlewares/handlerErrors');
+const { SERVER_ERROR } = require('./utils/constants');
+const { PORT, MONGODB } = require('./config');
 
 const app = express();
+mongoose.connect(MONGODB);
 
-const router = require('./routes/index');
+app.use(cookieParser());
+app.use(express.json());
+app.use('/', router);
+app.use(errorCelebrate());
+app.use(handlerErrors);
 
-app.use(helmet());
+app.use((err, req, res, next) => {
+  const { statusCode = SERVER_ERROR, message } = err;
 
-mongoose
-  .connect('mongodb://127.0.0.1:27017/mestodb')
-  .catch((err) => console.log(err));
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64919c6e94e7a0a7149a1fb3', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === SERVER_ERROR ? 'Ошибка на сервере' : message,
+    });
 
   next();
 });
 
-app.use('/', router);
-
-process.on('uncaughtException', (err, origin) => {
-  console.log(
-    `${origin} ${err.name} c текстом ${err.message} не была обработана. Обратите внимание!`,
-  );
-});
-
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Server started on port ${PORT}`);
-  console.log(BASE_PATH);
 });
