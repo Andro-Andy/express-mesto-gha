@@ -7,13 +7,12 @@ const {
   NOT_FOUND_ERROR,
 } = require('../utils/constants');
 
-const checkCard = (card, res) => {
+const checkCard = (card, res, next) => {
   if (card) {
     return res.send({ data: card });
   }
-  return res
-    .status(NOT_FOUND_ERROR)
-    .send({ message: `Карточка с указанным _id не найдена ${NOT_FOUND_ERROR}` });
+  const error = new NotFoundError(`Карточка с указанным _id не найдена ${NOT_FOUND_ERROR}`);
+  return next(error);
 };
 
 const getCards = (req, res, next) => {
@@ -39,7 +38,6 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   const _id = req.params.cardId;
-
   Card.findOne({ _id })
     .populate({ path: 'owner', model: 'user' })
     .then((card) => {

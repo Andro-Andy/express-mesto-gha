@@ -9,7 +9,7 @@ const Unauthorized = require('../errors/Unauthorized');
 const NotFound = require('../errors/NotFoundError');
 const Forbidden = require('../errors/Forbidden');
 
-module.exports = (err, req, res, next) => {
+module.exports = (err, req, res) => {
   let status = SERVER_ERROR;
   let message = 'На сервере произошла ошибка';
 
@@ -28,5 +28,4 @@ module.exports = (err, req, res, next) => {
   }
 
   res.status(status).send({ message });
-  return next();
 };

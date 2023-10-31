@@ -2,23 +2,24 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
+const NotFoundError = require('../errors/NotFoundError');
+const Unauthorized = require('../errors/Unauthorized');
 
 const User = require('../models/user');
 const {
   CODE,
   CODE_CREATED,
   NOT_FOUND_ERROR,
-  UNAUTHORIZED_ERROR,
 } = require('../utils/constants');
 
-const checkUser = (user, res) => {
+const checkUser = (user, res, next) => {
   if (user) {
     return res.send({ data: user });
   }
-  return res
-    .status(NOT_FOUND_ERROR)
-    .send({ message: 'Пользователь по указанному _id не найден' });
+  const error = new NotFoundError(`Пользователь по указанному _id не найден ${NOT_FOUND_ERROR}`);
+  return next(error);
 };
+
 const createUser = async (req, res, next) => {
   try {
     const {
@@ -82,13 +83,15 @@ const login = async (req, res, next) => {
       NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
       { expiresIn: '7d' },
     );
-    res.cookie('token', token, {
-      maxAge: 3600000,
-      httpOnly: true,
-      sameSite: true,
-    }).send({ token });
+    res
+      .cookie('token', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+        sameSite: true,
+      }).send({ token });
   } catch (err) {
-    res.status(UNAUTHORIZED_ERROR).send({ message: err.message });
+    const unauthorizedError = new Unauthorized(err.message);
+    next(unauthorizedError);
   }
 };
 
