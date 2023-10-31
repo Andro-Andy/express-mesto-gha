@@ -52,6 +52,12 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+const getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
 const getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -71,6 +77,16 @@ const updateUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const updateProfile = (req, res, next) => {
+  const { name, about } = req.body;
+  updateUser(req, res, { name, about }, next);
+};
+
+const updateAvatar = (req, res, next) => {
+  const { avatar } = req.body;
+  updateUser(req, res, { avatar }, next);
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -99,6 +115,9 @@ module.exports = {
   createUser,
   getUsers,
   getUserById,
+  getCurrentUser,
+  updateProfile,
+  updateAvatar,
   updateUser,
   login,
 };
