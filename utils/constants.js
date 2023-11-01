@@ -7,7 +7,7 @@ const NOT_FOUND_ERROR = 404;
 const CONFLICT_ERROR = 409;
 const SERVER_ERROR = 500;
 
-const REGEX = /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+)$/;
+const REGEX = /^(https?:\/\/)?([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,}([/a-zA-Z0-9_\-/]*)?$/;
 
 module.exports = {
   CODE,
